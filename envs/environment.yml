@@ -1,4 +1,4 @@
-name: scrnaseq-vitiligo
+name: scrna-fastq
 channels:
    - conda-forge
    - bioconda
