@@ -1,0 +1,12 @@
+name: scrnaseq-vitiligo
+channels:
+   - conda-forge
+   - bioconda
+dependencies:
+   - python=3.11
+   - kb-python
+   - scanpy
+   - anndata
+   - matplotlib
+   - jupyterlab
+
