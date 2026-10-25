@@ -114,40 +114,54 @@ zcat pbmc_1k_v3_S1_L001_R1_001.fastq.gz | wc -l
 ## 2. Referencia
 
 ### Índice utilizado
-- **Fuente:** <de dónde se descargó, con link>
-- **Versión:** <Ensembl, ensamble>
-- **Tipo:** <standard o nac, y qué significa>
-- **Tamaño:** índice <> MB, t2g <> MB
+- **Fuente:** índice prehecho de kallisto descargado con `kb ref -d human` ([pachterlab/kallisto-transcriptome-indices](https://github.com/pachterlab/kallisto-transcriptome-indices)).
+- **Versión:** Ensembl 108, ensamble GRCh38; construido con kb-python.
+- **Tipo:** *standard*: solo transcritos maduros (cDNA, sin intrones). Incluye genes codificantes, lncRNA y genes de inmunoglobulinas y receptores de células T (IG/TR). La alternativa *nac* agrega transcritos nacientes (con intrones), útil para single-nucleus o RNA velocity.
+- **Tamaño:** índice 393 MB, t2g 17 MB.
 
 ### Tabla transcrito → gen (t2g)
 
 ```
-<pega 2–3 líneas de ejemplo>
+ENST00000343575.11  ENSG00000107562.17  CXCL12  CXCL12-201  10  44377067  44385097  -
+ENST00000374426.6   ENSG00000107562.17  CXCL12  CXCL12-202  10  44375867  44385043  -
+ENST00000374429.6   ENSG00000107562.17  CXCL12  CXCL12-203  10  44370165  44385092  -
 ```
 
 | Columna | Contenido |
 |---|---|
-| 1 | <> |
-| ... | ... |
+| 1 | ID de Ensembl del transcrito (`ENST…`; el sufijo `.11` es la versión) |
+| 2 | ID de Ensembl del gen (`ENSG…`) |
+| 3 | Nombre del gen |
+| 4 | Nombre del transcrito (isoforma) |
+| 5 | Cromosoma |
+| 6 | Posición de inicio |
+| 7 | Posición de fin |
+| 8 | Hebra (`+` / `-`) |
 
-- **Transcritos:** <>
-- **Genes:** <>
-- **Transcritos por gen (promedio):** <>
-- **Ejemplo:** <tu gen> tiene <> isoformas
+- **Transcritos:** 227,665
+- **Genes:** 39,546
+- **Transcritos por gen (promedio):** ~5.8
+- **Ejemplo:** CXCL12 tiene 8 isoformas (CXCL12-201 a CXCL12-208), todas del mismo gen `ENSG00000107562`.
 
-### Conceptos
-- **Alinear vs. pseudoalinear:** <>
-- **¿Qué se pierde al pseudoalinear?** <>
-- **k-mer (k = 31):** <>
-- **Clase de equivalencia:** <>
-- **¿Para qué sirve el t2g?** <usa tu ejemplo>
-
-### Limitaciones de esta referencia
-- **Lecturas intrónicas:** <>
-- **Comparación con Cell Ranger 3.0.0 (Ensembl 93, 33,538 genes):** <>
 
 ### Comandos utilizados
 
 ```bash
-<tus comandos con comentarios>
+# Descargar el índice prehecho y el t2g (ver scripts/01_referencia.sh)
+bash scripts/01_referencia.sh
+
+# Tamaño de los archivos
+ls -lh data/reference/
+
+# Primeras líneas del t2g
+head data/reference/t2g.txt
+
+# Número de transcritos (una línea p
+wc -l data/reference/t2g.txt
+
+# Número de genes distintos (valores únicos de la columna 2)
+cut -f2 data/reference/t2g.txt | sor
+
+# Isoformas de un gen específico
+grep -w CXCL12 data/reference/t2g.txt
 ```
