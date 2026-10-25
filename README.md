@@ -140,7 +140,7 @@ ENST00000374429.6   ENSG00000107562.17  CXCL12  CXCL12-203  10  44370165  443850
 
 - **Transcritos:** 227,665
 - **Genes:** 39,546
-- **Transcritos por gen (promedio):** ~5.8
+- **Transcritos por gen (promedio):** Aproximadamente 5.8
 - **Ejemplo:** CXCL12 tiene 8 isoformas (CXCL12-201 a CXCL12-208), todas del mismo gen `ENSG00000107562`.
 
 
