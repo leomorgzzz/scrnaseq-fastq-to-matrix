@@ -110,3 +110,44 @@ zcat pbmc_1k_v3_S1_L001_R1_001.fastq.gz | head -400 | awk 'NR % 4 == 2 {print le
 # Contar líneas; lecturas = líneas / 4
 zcat pbmc_1k_v3_S1_L001_R1_001.fastq.gz | wc -l
 ```
+
+## 2. Referencia
+
+### Índice utilizado
+- **Fuente:** <de dónde se descargó, con link>
+- **Versión:** <Ensembl, ensamble>
+- **Tipo:** <standard o nac, y qué significa>
+- **Tamaño:** índice <> MB, t2g <> MB
+
+### Tabla transcrito → gen (t2g)
+
+```
+<pega 2–3 líneas de ejemplo>
+```
+
+| Columna | Contenido |
+|---|---|
+| 1 | <> |
+| ... | ... |
+
+- **Transcritos:** <>
+- **Genes:** <>
+- **Transcritos por gen (promedio):** <>
+- **Ejemplo:** <tu gen> tiene <> isoformas
+
+### Conceptos
+- **Alinear vs. pseudoalinear:** <>
+- **¿Qué se pierde al pseudoalinear?** <>
+- **k-mer (k = 31):** <>
+- **Clase de equivalencia:** <>
+- **¿Para qué sirve el t2g?** <usa tu ejemplo>
+
+### Limitaciones de esta referencia
+- **Lecturas intrónicas:** <>
+- **Comparación con Cell Ranger 3.0.0 (Ensembl 93, 33,538 genes):** <>
+
+### Comandos utilizados
+
+```bash
+<tus comandos con comentarios>
+```

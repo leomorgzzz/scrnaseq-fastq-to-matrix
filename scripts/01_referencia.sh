@@ -12,7 +12,7 @@ REF_DIR=data/reference
 mkdir -p "$REF_DIR"
 
 # Si el índice y el t2g ya existen, no volver a descargarlos.
-if [[ -f "$REF_DIR/index.idx" && -f "$REF_DIR/t2g.txt"]]; then
+if [[ -f "$REF_DIR/index.idx" && -f "$REF_DIR/t2g.txt" ]]; then
         echo "El índice ya existe en $REF_DIR; no se descarga de nuevo."
         exit 0
 fi
