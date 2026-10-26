@@ -235,3 +235,62 @@ El script recibe los FASTQ de los dos carriles, el índice de kallisto y el t2g,
 
 Se procesaron las 66.6 millones de leudoalineamiento (57.4%) y de barcodes válidos (95.8% de las lecturas) son comparables a las de Cell Ranger. La diferencia principal se
 explica por las lecturas intrónicas,incluye. La matriz tiene 241,214 barcodes, en su mayoría gotas vacías; el siguiente paso es separar las células reales con un knee plot.
+
+## 4. Filtrado de células: knee plot
+
+Notebook: `notebooks/01_knee_plot.ipynb`
+
+### Problema
+
+La matriz sin filtrar tiene 241,214 barcodes, pero el experimento capturó alrededor de 1,200 células. La mayoría de los barcodes corresponde a gotas vacías que capturaron RNA ambiental (de células rotas en la suspensión). Hay que decidir qué barcodes son células reales.
+
+### Método
+
+1. Se calcularon los UMIs totales por barcode (suma de cada fila de la matriz).
+2. Se ordenaron de mayor a menor y se graficaron contra su rango, en escala log-log (*knee plot*).
+3. Se eligió un umbral de UMIs en la zona de caída brusca, que separa las células (muchos UMIs) de las gotas vacías (pocos UMIs).
+
+Se usa escala logarítmica porque los valores abarcan varios órdenes de magnitud: de 1 a alrededor de 59,000 UMIs y de 1 a alrededor de 241,000 barcodes.
+
+![Knee plot](results/figures/knee_plot.png)
+
+La gráfica muestra tres zonas:
+- **Meseta superior** (rango 1 a cerca de 1,000): células, con miles a decenas de miles de UMIs.
+- **Caída brusca** (rango cercano a 1,150 y 1,350): transición entre células y gotas vacías.
+- **Cola inferior** (rango > 1,500): gotas vacías, con 1 a 50 UMIs.
+
+### Elección del umbral
+
+| Rango del barcode | UMIs totales |
+|---|---|
+| 1,000 | 4,502 |
+| 1,150 | 1,612 |
+| 1,200 | 805 |
+| 1,222 | 661 |
+| 1,300 | 230 |
+| 1,350 | 116 |
+| 1,500 | 53 |
+
+| Umbral (UMIs) | Barcodes retenidos |
+|---|---|
+| ≥ 100 | 1,369 |
+| ≥ 200 | 1,315 |
+| **≥ 450** | **1,258** |
+| ≥ 500 | 1,251 |
+| ≥ 1,000 | 1,177 |
+| ≥ 2,000 | 1,131 |
+
+**Umbral elegido: 450 UMIs.** Está en la parte más vertical de la caída, donde se separan claramente las células de las gotas vacías. Entre los rangos 1,150 y 1,350 los UMIs bajan de 1,600 a 116, así que cualquier umbral entre 200 y 1,000 retiene entre 1,177 y 1,315 barcodes. El resultado es robusto a la elección exacta del umbral.
+
+### Resultado
+
+| | Valor |
+|---|---|
+| Barcodes antes del filtro | 241,214 |
+| Células retenidas | 1,258 |
+| Barcodes eliminados | 239,956 (99.5%) |
+| Células estimadas por Cell Ranger 3.0.0 | 1,222 |
+| Diferencia | +36 (+2.9%) |
+
+La matriz filtrada se guardó en `data/processed/pbmc_1k_v3/adata_filtered.h5ad`.
+
