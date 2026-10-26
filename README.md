@@ -165,3 +165,73 @@ cut -f2 data/reference/t2g.txt | sor
 # Isoformas de un gen específico
 grep -w CXCL12 data/reference/t2g.txt
 ```
+
+## 3. Cuantificación con kb count
+
+### Comando
+
+```bash
+bash scripts/02_kb_count.sh
+```
+
+El script recibe los FASTQ de los dos carriles, el índice de kallisto y el t2g, y genera una matriz de conteos **barcodes × genes sin filtrar**. Los FASTQ se pasan por pares de cada carril (R1 y R2) porque kb espera el barcode y el UMI en el primer archivo de cada par y el cDNA en el segundo. I1 no se usa: el índice de muestra solo sirve para separar bibliotecas de una corrida, y ya vienen separados.
+
+### Pasos internos de kb count
+
+| Paso | Herramienta | Qué hace |
+|---|---|---|
+| 1 | `kallisto bus` | Pseudoalinea cada R2 contra el índice y guarda, por lectura, su barcode, su UMI y su clase de equivalencia en un archivo BUS (*Barcode, UMI, Set*). |
+| 2 | `bustools correct` | Compara cada barcode con la lista de barcodes válidos de 10x v3 y corrige los que difieren por una base (errores de secuenciación). |
+| 3 | `bustools sort` | Ordena los registros por barcode y UMI, para que las lecturas de la misma molécula queden juntas. |
+| 4 | `bustools count` | Colapsa las lecturas con el mismo barcode + UMI en una sola molécula (elimina duplicados de PCR) y usa el t2g para asignarla a un gen. Genera la matriz. |
+
+**Estructura de lectura para 10x v3** (`kb --list`):
+
+| Elemento | Archivo | Posición |
+|---|---|---|
+| Cell barcode | R1 (archivo 0) | bases 0–16 |
+| UMI | R1 (archivo 0) | bases 16–28 |
+| cDNA | R2 (archivo 1) | completa |
+
+### Archivos de salida
+
+| Archivo | Contenido |
+|---|---|
+| `output.bus` / `output.unfiltered.bus` | Registros binarios de barcode + UMI + clase de equivalencia,antes de contar. Son intermedios y s
+| `matrix.ec` | Las clases de equivalencia: qué conjunto de transcritos corresponde a cada número de   clase. |
+| `transcripts.txt` | Lista de los transcritos del índice, en el orden que usa `matrix.ec`. |          | `run_info.json` | Resumen del pseuesadas y porcentaje pseudoalineado. |
+| `inspect.json` | Resumen de barcodes y UMIs: cuántos hay, cuántos son válidos, medianas por barcode. |
+| `counts_unfiltered/cells_x_genes.mtx` | La matriz de conteos en formato disperso (Matrix Market): solo guarda los valores distintos de
+| `counts_unfiltered/cells_x_genes.barcodes.txt` | Los barcodes, uno por fila de la matriz. |
+| `counts_unfiltered/cells_x_genes.g` | Los genes (IDs de Ensembl y nombres), uno por columna de la matriz. |
+| `counts_unfiltered/adata.h5ad` | La misma matriz, con barcodes y genes, en formato AnnData para Scanpy. |
+
+### Pseudoalineamiento (`run_info.json`)
+
+| Métrica | kb (kallisto) | Cell Ranger 3.0.0 |
+|---|---|---|
+| Lecturas procesadas | 66,601,887 | 66,601,887 |
+| Pseudoalineadas / mapeadas al transcriptoma | 38,261,433 (57.4%) | 53.7% |
+| Compatibles con un solo transcrito | 14.7% | — |
+| Mapeadas a intrones | — (índice sin intrones) | 31.1% |
+| Mapeadas a regiones intergénicas | — | 4.8% |
+
+
+### Barcodes y UMIs (`inspect.json`)
+
+| Métrica | Valor |
+|---|---|
+| Barcodes distintos (antes de corregir) | 504,233 |
+| Barcodes en la lista válida | 230,319 (45.7%) |
+| Lecturas con barcode en la lista válida | 95.8% (Cell Ranger: 97.4%) |
+| Mediana de lecturas por barcode | 3 |
+| Mediana de UMIs por barcode | 1 |
+| Barcodes en la matriz sin filtrar | 241,214 |
+| Células estimadas por Cell Ranger | 1,222 |
+| Mediana de UMIs por célula (Cell Ranger) | 6,628 |
+
+
+### Conclusión
+
+Se procesaron las 66.6 millones de leudoalineamiento (57.4%) y de barcodes válidos (95.8% de las lecturas) son comparables a las de Cell Ranger. La diferencia principal se
+explica por las lecturas intrónicas,incluye. La matriz tiene 241,214 barcodes, en su mayoría gotas vacías; el siguiente paso es separar las células reales con un knee plot.
